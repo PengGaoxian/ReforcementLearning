@@ -47,6 +47,8 @@ def run_agent(RL):
     total_steps = 0  # 定义所有回合的总执行步数
     observation = env.reset()  # 获取初始观测状态
     while True:
+        # env.render() # 显示动画效果
+
         action = RL.choose_action(observation)  # 选择动作
         f_action = (action - (ACTION_SPACE - 1) / 2) / ((ACTION_SPACE - 1) / 4)  # 转换动作
         observation_, reward, done, info = env.step(np.array([f_action]))  # 获取执行动作后的下一个观测状态、奖励、结束标志等

@@ -55,6 +55,8 @@ def run_agent(RL):
     for i_episode in range(20):
         observation = env.reset() # 初始化环境
         while True:
+            # env.render() # 显示动画
+
             action = RL.choose_action(observation) # 根据当前状态选择动作
             observation_, reward, done, info = env.step(action) # 执行动作
 
