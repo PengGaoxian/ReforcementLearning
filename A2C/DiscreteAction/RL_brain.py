@@ -21,7 +21,7 @@ class Actor(object):
         self.a = tf.placeholder(tf.int32, None, "act") # 动作
         self.td_error = tf.placeholder(tf.float32, None, "td_error")  # TD_error
 
-        # 创建Actor神经网络
+        # 创建Actor神经网络，输入状态，输出动作的概率
         with tf.variable_scope('Actor'):
             # 第一层全连接层
             l1 = tf.layers.dense(
@@ -45,8 +45,8 @@ class Actor(object):
 
         # AC算法是通过蒙特卡洛方法来计算V(s)的，这里A2C用优势函数A(s,a)=V(s)-Q(s,a)来替代V(s)
         with tf.variable_scope('exp_v'):
-            log_prob = tf.log(self.acts_prob[0, self.a]) # 将动作概率转换为对数
-            self.exp_v = tf.reduce_mean(log_prob * self.td_error)  # 优势函数(TD_error)替代V(s)
+            log_prob = tf.log(self.acts_prob[0, self.a]) # 从所有动作概率中选出执行动作的概率，并取对数
+            self.exp_v = tf.reduce_mean(log_prob * self.td_error)  # 优势函数A(s)TD_error替代V(s)
 
         # 训练网络参数
         with tf.variable_scope('train'):
@@ -82,7 +82,7 @@ class Critic(object):
         self.v_ = tf.placeholder(tf.float32, [1, 1], "v_next") # 下一个状态的V(s)
         self.r = tf.placeholder(tf.float32, None, 'r') # 奖励
 
-        # 创建Critic神经网络
+        # 创建Critic神经网络，输入状态，输出V(s)
         with tf.variable_scope('Critic'):
             # 第一层全连接层
             l1 = tf.layers.dense(
@@ -117,10 +117,13 @@ class Critic(object):
         s = s[np.newaxis, :] # 将状态转换为矩阵，方便输入网络
         s_ = s_[np.newaxis, :] # 将下一个状态转换为矩阵，方便输入网络
 
-        v_ = self.sess.run(self.v,  # 根据下一个状态计算V(s+1)
+        # 运行Critic网络，根据下一个状态计算V(s+1)
+        v_ = self.sess.run(self.v,
                            feed_dict={self.s: s_})
-        td_error, _ = self.sess.run([self.td_error, self.train_op], # 根据状态、奖励、下一个状态更新网络参数，计算TD_error
+        # 运行Critic网络，根据状态、奖励、下一个状态更新网络参数，计算TD_error
+        td_error, _ = self.sess.run([self.td_error, self.train_op],
                            feed_dict={self.s: s,
-                                      self.v_: v_, self.r: r})
+                                      self.v_: v_,
+                                      self.r: r})
         # 返回TD_error = A(s,a) = Q(s,a) - V(s)
         return td_error
