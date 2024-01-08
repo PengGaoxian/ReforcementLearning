@@ -74,8 +74,8 @@ class PolicyGradient:
         with tf.name_scope('loss'):
             # 最大化总reward，即(log_p * R)， 相当于最小化 -(log_p * R)
             # neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=all_act, labels=self.tf_acts)   # this is negative log of chosen action
-            neg_log_prob = tf.reduce_sum(-tf.log(self.all_act_prob)*tf.one_hot(self.tf_acts, self.n_actions), axis=1) # 获取一个回合中每个动作的概率
-            loss = tf.reduce_mean(neg_log_prob * self.tf_vt)  # 将每个动作的概率乘以对应的奖励，再求平均值，作为loss（本质上没有loss，因为没有目标）
+            neg_log_prob = tf.reduce_sum(-tf.log(self.all_act_prob)*tf.one_hot(self.tf_acts, self.n_actions), axis=1) # 将一个回合中所有动作的概率取对数，即-log_p
+            loss = tf.reduce_mean(neg_log_prob * self.tf_vt)  # 将回合中的每个动作的概率乘以对应的奖励，再求平均值，作为loss（本质上没有loss，因为没有目标）
         with tf.name_scope('train'):
             self.train_op = tf.train.AdamOptimizer(self.lr).minimize(loss) # 使用Adam优化器最小化loss
 
